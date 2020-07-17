@@ -1,8 +1,10 @@
 package server
 
 import (
-	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/s1moe2/gosrv/models"
 	"net/http"
+	"time"
 
 	"github.com/s1moe2/gosrv/config"
 	"github.com/s1moe2/gosrv/db"
@@ -16,14 +18,33 @@ func Start() {
 	dbConn := db.ConnectDB(conf.Database)
 	userRepo := repositories.NewUserRepo(dbConn)
 
-	h := handlers.NewBaseHandler(userRepo)
+	router := mux.NewRouter()
+	setupUsersRouter(router, userRepo)
 
-	http.HandleFunc("/", h.HelloWorld)
+	srv := newServer(conf.Server, router)
 
-	s := &http.Server{
-		Addr: fmt.Sprintf("%s:%s", "localhost", "5000"),
+	srv.ListenAndServe()
+
+}
+
+func newServer(serverConfig config.ServerConfig, router *mux.Router) *http.Server {
+	return &http.Server{
+		Addr: serverConfig.Address,
+		//ErrorLog:     log.New(logrus.New().Writer(), "", 0),
+		Handler:      router,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  15 * time.Second,
 	}
+}
 
-	s.ListenAndServe()
+func setupUsersRouter(router *mux.Router, repo models.UserRepository) {
+	h := handlers.NewUsersHandler(repo)
 
+	ur := router.PathPrefix("/users").Subrouter()
+
+	ur.HandleFunc("/", h.Get).
+		Methods(http.MethodGet)
+	ur.HandleFunc("/{id}", h.GetByID).
+		Methods(http.MethodGet)
 }
