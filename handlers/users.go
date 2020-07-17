@@ -32,3 +32,18 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("Hello, World"))
 }
+
+// Create creates a new user
+func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, World"))
+}
+
+// Update updates a user
+func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, World"))
+}
+
+// Delete deletes a user
+func (h *UsersHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, World"))
+}
