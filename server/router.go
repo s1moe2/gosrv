@@ -10,10 +10,15 @@ import (
 func setupUsersRouter(router *mux.Router, repo models.UserRepository) {
 	h := handlers.NewUsersHandler(repo)
 
-	ur := router.PathPrefix("/users").Subrouter()
+	ur := router.
+		PathPrefix("/users").
+		Subrouter()
 
-	ur.HandleFunc("/", h.Get).
-		Methods(http.MethodGet)
-	ur.HandleFunc("/{id}", h.GetByID).
-		Methods(http.MethodGet)
+	ur.Methods(http.MethodGet).
+		Path("/").
+		HandlerFunc(h.Get)
+
+	ur.Methods(http.MethodGet).
+		Path("/{id}").
+		HandlerFunc(h.GetByID)
 }

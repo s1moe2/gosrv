@@ -21,10 +21,6 @@ func NewUsersHandler(userRepo models.UserRepository) *UsersHandler {
 
 // Get gets all users
 func (h *UsersHandler) Get(w http.ResponseWriter, r *http.Request) {
-	if user, err := h.userRepo.FindByID("1"); err != nil {
-		fmt.Println("Error", user)
-	}
-
 	w.Write([]byte("Hello, World"))
 }
 
