@@ -1,12 +1,17 @@
 package models
 
-// User ..
+// User model
 type User struct {
-	Name string
+	ID    string
+	Name  string
+	Email string
 }
 
-// UserRepository ..
+// UserRepository defines the set of User related methods available
 type UserRepository interface {
-	FindByID(ID int) (*User, error)
-	Save(user *User) error
+	GetAll() []*User
+	FindByID(ID string) (*User, error)
+	Create(user *User) (*User, error)
+	Update(user *User) (*User, error)
+	Delete(ID string) error
 }
