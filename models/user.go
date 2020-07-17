@@ -9,7 +9,7 @@ type User struct {
 
 // UserRepository defines the set of User related methods available
 type UserRepository interface {
-	GetAll() []*User
+	GetAll() ([]*User, error)
 	FindByID(ID string) (*User, error)
 	Create(user *User) (*User, error)
 	Update(user *User) (*User, error)
