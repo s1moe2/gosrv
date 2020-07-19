@@ -128,7 +128,7 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		var user *models.User
 		json.Unmarshal(body, &user)
 
-		if user != mock.mockUsers[0] {
+		if user.ID != mock.mockUsers[0].ID {
 			t.Error("wrong user returned")
 		}
 	})

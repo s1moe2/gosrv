@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/s1moe2/gosrv/models"
@@ -39,11 +38,26 @@ func (h *UsersHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 // GetByID tries to get a user by ID
 func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	if user, err := h.userRepo.FindByID("1"); err != nil {
-		fmt.Println("Error", user)
+	uid := r.URL.Query().Get("id")
+
+	user, err := h.userRepo.FindByID(uid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	w.Write([]byte("Hello, World"))
+	if user == nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	res, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
 }
 
 // Create creates a new user
