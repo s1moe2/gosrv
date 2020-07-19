@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -21,7 +22,19 @@ func NewUsersHandler(userRepo models.UserRepository) *UsersHandler {
 
 // Get gets all users
 func (h *UsersHandler) Get(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World"))
+	users, err := h.userRepo.GetAll()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	res, err := json.Marshal(users)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
 }
 
 // GetByID tries to get a user by ID
