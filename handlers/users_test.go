@@ -172,19 +172,26 @@ func TestUsersHandler_GetByID(t *testing.T) {
 }
 
 func TestUsersHandler_Create(t *testing.T) {
-	mockPayload := bytes.NewBufferString(`
+	mockPayload := map[string]interface{}{
 		"email": "johndoe@gosrv.com",
-		"name": "John Doe"
-	`)
+		"name":  "John Doe",
+	}
 
 	t.Run("expect POST /users to return 201", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
+		mock.findByEmailImpl = func(email string) (*models.User, error) {
+			return nil, nil
+		}
 		mock.createImpl = func(user *models.User) (*models.User, error) {
+			user.ID = "3"
+			mock.mockUsers = append(mock.mockUsers, user)
 			return user, nil
 		}
 		uh := NewUsersHandler(mock)
 
-		r := httptest.NewRequest("POST", "/users/1", mockPayload)
+		body, _ := json.Marshal(mockPayload)
+		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		uh.Create(w, r)
 		resp := w.Result()
@@ -205,7 +212,7 @@ func TestUsersHandler_Create(t *testing.T) {
 		var user *models.User
 		json.Unmarshal(body, &user)
 
-		if user.ID != mock.mockUsers[0].ID {
+		if user.ID != mock.mockUsers[len(mock.mockUsers)-1].ID {
 			t.Fatal("wrong user returned")
 		}
 	})
@@ -221,7 +228,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		}
 		uh := NewUsersHandler(mock)
 
-		r := httptest.NewRequest("POST", "/users", mockPayload)
+		body, _ := json.Marshal(mockPayload)
+		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 		uh.Create(w, r)
 		resp := w.Result()
@@ -238,7 +246,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		}
 		uh := NewUsersHandler(mock)
 
-		r := httptest.NewRequest("POST", "/users", mockPayload)
+		body, _ := json.Marshal(mockPayload)
+		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 		uh.Create(w, r)
 		resp := w.Result()
@@ -248,14 +257,18 @@ func TestUsersHandler_Create(t *testing.T) {
 		}
 	})
 
-	t.Run("expect POST /users to return 500 on find internal error", func(t *testing.T) {
+	t.Run("expect POST /users to return 500 on create internal error", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
+		mock.findByEmailImpl = func(email string) (*models.User, error) {
+			return nil, nil
+		}
 		mock.createImpl = func(user *models.User) (*models.User, error) {
 			return nil, errors.New("repo error")
 		}
 		uh := NewUsersHandler(mock)
 
-		r := httptest.NewRequest("POST", "/users", mockPayload)
+		body, _ := json.Marshal(mockPayload)
+		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		w := httptest.NewRecorder()
 		uh.Create(w, r)
 		resp := w.Result()

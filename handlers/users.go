@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/s1moe2/gosrv/models"
@@ -62,7 +63,42 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 // Create creates a new user
 func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World"))
+	decoder := json.NewDecoder(r.Body)
+
+	var userPayload models.User
+	err := decoder.Decode(&userPayload)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	userCheck, err := h.userRepo.FindByEmail(userPayload.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if userCheck != nil {
+		http.Error(w, "email already in use", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.userRepo.Create(&userPayload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(res)
 }
 
 // Update updates a user
