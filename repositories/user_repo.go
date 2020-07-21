@@ -29,6 +29,11 @@ func (r *UserRepo) FindByID(ID string) (*models.User, error) {
 	return nil, nil
 }
 
+// FindByEmail finds a user by email, returns nil if not found
+func (r *UserRepo) FindByEmail(email string) (*models.User, error) {
+	return nil, nil
+}
+
 // Create creates a new user, returning the full model
 func (r *UserRepo) Create(user *models.User) (*models.User, error) {
 	return &models.User{}, nil

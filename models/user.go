@@ -11,6 +11,7 @@ type User struct {
 type UserRepository interface {
 	GetAll() ([]*User, error)
 	FindByID(ID string) (*User, error)
+	FindByEmail(email string) (*User, error)
 	Create(user *User) (*User, error)
 	Update(user *User) (*User, error)
 	Delete(ID string) error

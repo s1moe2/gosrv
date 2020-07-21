@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/s1moe2/gosrv/models"
@@ -25,23 +26,23 @@ func TestUsersHandler_Get(t *testing.T) {
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected %d response, got %d", http.StatusOK, resp.StatusCode)
+			t.Fatalf("expected %d response, got %d", http.StatusOK, resp.StatusCode)
 		}
 
 		if resp.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
+			t.Fatalf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			t.Error("failed to read response body")
+			t.Fatal("failed to read response body")
 		}
 
 		var users []*models.User
 		json.Unmarshal(body, &users)
 
 		if len(users) != len(mock.mockUsers) {
-			t.Error("wrong user set")
+			t.Fatal("wrong user set")
 		}
 	})
 
@@ -59,23 +60,23 @@ func TestUsersHandler_Get(t *testing.T) {
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected %d response, got %d", http.StatusOK, resp.StatusCode)
+			t.Fatalf("expected %d response, got %d", http.StatusOK, resp.StatusCode)
 		}
 
 		if resp.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
+			t.Fatalf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			t.Error("failed to read response body")
+			t.Fatal("failed to read response body")
 		}
 
 		var users []*models.User
 		json.Unmarshal(body, &users)
 
 		if len(users) != 0 {
-			t.Error("wrong user set")
+			t.Fatal("wrong user set")
 		}
 	})
 
@@ -93,7 +94,7 @@ func TestUsersHandler_Get(t *testing.T) {
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected %d response, got %d", http.StatusInternalServerError, resp.StatusCode)
+			t.Fatalf("expected %d response, got %d", http.StatusInternalServerError, resp.StatusCode)
 		}
 	})
 }
@@ -113,23 +114,23 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected %d response, got %d", http.StatusOK, resp.StatusCode)
+			t.Fatalf("expected %d response, got %d", http.StatusOK, resp.StatusCode)
 		}
 
 		if resp.Header.Get("Content-Type") != "application/json" {
-			t.Errorf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
+			t.Fatalf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			t.Error("failed to read response body")
+			t.Fatal("failed to read response body")
 		}
 
 		var user *models.User
 		json.Unmarshal(body, &user)
 
 		if user.ID != mock.mockUsers[0].ID {
-			t.Error("wrong user returned")
+			t.Fatal("wrong user returned")
 		}
 	})
 
@@ -147,7 +148,7 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusNotFound {
-			t.Errorf("expected %d response, got %d", http.StatusNotFound, resp.StatusCode)
+			t.Fatalf("expected %d response, got %d", http.StatusNotFound, resp.StatusCode)
 		}
 	})
 
@@ -165,7 +166,102 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusInternalServerError {
-			t.Errorf("expected %d response", http.StatusInternalServerError)
+			t.Fatalf("expected %d response", http.StatusInternalServerError)
+		}
+	})
+}
+
+func TestUsersHandler_Create(t *testing.T) {
+	mockPayload := bytes.NewBufferString(`
+		"email": "johndoe@gosrv.com",
+		"name": "John Doe"
+	`)
+
+	t.Run("expect POST /users to return 201", func(t *testing.T) {
+		mock := newUserRepoMockDefault()
+		mock.createImpl = func(user *models.User) (*models.User, error) {
+			return user, nil
+		}
+		uh := NewUsersHandler(mock)
+
+		r := httptest.NewRequest("POST", "/users/1", mockPayload)
+		w := httptest.NewRecorder()
+		uh.Create(w, r)
+		resp := w.Result()
+
+		if resp.StatusCode != http.StatusCreated {
+			t.Fatalf("expected %d response, got %d", http.StatusCreated, resp.StatusCode)
+		}
+
+		if resp.Header.Get("Content-Type") != "application/json" {
+			t.Fatalf("expected 'application/json', got '%s'", resp.Header.Get("Content-Type"))
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatal("failed to read response body")
+		}
+
+		var user *models.User
+		json.Unmarshal(body, &user)
+
+		if user.ID != mock.mockUsers[0].ID {
+			t.Fatal("wrong user returned")
+		}
+	})
+
+	t.Run("expect POST /users to return 400 when the email is in use", func(t *testing.T) {
+		mock := newUserRepoMockDefault()
+		mock.findByEmailImpl = func(email string) (*models.User, error) {
+			return &models.User{
+				ID:    "5",
+				Name:  "John Doe",
+				Email: email,
+			}, nil
+		}
+		uh := NewUsersHandler(mock)
+
+		r := httptest.NewRequest("POST", "/users", mockPayload)
+		w := httptest.NewRecorder()
+		uh.Create(w, r)
+		resp := w.Result()
+
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Fatalf("expected %d response, got %d", http.StatusNotFound, resp.StatusCode)
+		}
+	})
+
+	t.Run("expect POST /users to return 500 on find internal error", func(t *testing.T) {
+		mock := newUserRepoMockDefault()
+		mock.findByEmailImpl = func(email string) (*models.User, error) {
+			return nil, errors.New("repo error")
+		}
+		uh := NewUsersHandler(mock)
+
+		r := httptest.NewRequest("POST", "/users", mockPayload)
+		w := httptest.NewRecorder()
+		uh.Create(w, r)
+		resp := w.Result()
+
+		if resp.StatusCode != http.StatusInternalServerError {
+			t.Fatalf("expected %d response", http.StatusInternalServerError)
+		}
+	})
+
+	t.Run("expect POST /users to return 500 on find internal error", func(t *testing.T) {
+		mock := newUserRepoMockDefault()
+		mock.createImpl = func(user *models.User) (*models.User, error) {
+			return nil, errors.New("repo error")
+		}
+		uh := NewUsersHandler(mock)
+
+		r := httptest.NewRequest("POST", "/users", mockPayload)
+		w := httptest.NewRecorder()
+		uh.Create(w, r)
+		resp := w.Result()
+
+		if resp.StatusCode != http.StatusInternalServerError {
+			t.Fatalf("expected %d response", http.StatusInternalServerError)
 		}
 	})
 }

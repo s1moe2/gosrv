@@ -5,12 +5,13 @@ import (
 )
 
 type userRepoMock struct {
-	mockUsers    []*models.User
-	getAllImpl   func() ([]*models.User, error)
-	findByIDImpl func(ID string) (*models.User, error)
-	createImpl   func(user *models.User) (*models.User, error)
-	updateImpl   func(user *models.User) (*models.User, error)
-	deleteImpl   func(ID string) error
+	mockUsers       []*models.User
+	getAllImpl      func() ([]*models.User, error)
+	findByIDImpl    func(ID string) (*models.User, error)
+	findByEmailImpl func(email string) (*models.User, error)
+	createImpl      func(user *models.User) (*models.User, error)
+	updateImpl      func(user *models.User) (*models.User, error)
+	deleteImpl      func(ID string) error
 }
 
 func newUserRepoMockDefault() *userRepoMock {
@@ -42,6 +43,10 @@ func (r *userRepoMock) GetAll() ([]*models.User, error) {
 
 func (r *userRepoMock) FindByID(id string) (*models.User, error) {
 	return r.findByIDImpl(id)
+}
+
+func (r *userRepoMock) FindByEmail(email string) (*models.User, error) {
+	return r.findByEmailImpl(email)
 }
 
 func (r *userRepoMock) Create(user *models.User) (*models.User, error) {
