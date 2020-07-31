@@ -5,7 +5,7 @@ import (
 )
 
 type userRepoMock struct {
-	mockUsers       []*models.User
+	mockUsers       map[string]*models.User
 	getAllImpl      func() ([]*models.User, error)
 	findByIDImpl    func(ID string) (*models.User, error)
 	findByEmailImpl func(email string) (*models.User, error)
@@ -16,13 +16,13 @@ type userRepoMock struct {
 
 func newUserRepoMockDefault() *userRepoMock {
 	return &userRepoMock{
-		mockUsers: []*models.User{
-			&models.User{
+		mockUsers: map[string]*models.User{
+			"1": &models.User{
 				ID:    "1",
 				Name:  "user1",
 				Email: "user1@eml.com",
 			},
-			&models.User{
+			"2": &models.User{
 				ID:    "2",
 				Name:  "user2",
 				Email: "user2@eml.com",
@@ -32,8 +32,12 @@ func newUserRepoMockDefault() *userRepoMock {
 }
 
 func newUserRepoMock(data []*models.User) *userRepoMock {
+	users := map[string]*models.User{}
+	for _, u := range data {
+		users[u.ID] = u
+	}
 	return &userRepoMock{
-		mockUsers: data,
+		mockUsers: users,
 	}
 }
 

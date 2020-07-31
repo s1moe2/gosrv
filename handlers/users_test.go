@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/mux"
 	"github.com/s1moe2/gosrv/models"
 	"io/ioutil"
 	"net/http"
@@ -11,17 +12,30 @@ import (
 	"testing"
 )
 
+func prepareRouter(method string, path string, h func(http.ResponseWriter, *http.Request)) *mux.Router{
+	router := mux.NewRouter()
+	router.Methods(method).
+		Path(path).
+		HandlerFunc(h)
+	return router
+}
+
 func TestUsersHandler_Get(t *testing.T) {
 	t.Run("expect GET /users to return 200 and a list of users", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
 		mock.getAllImpl = func() ([]*models.User, error) {
-			return mock.mockUsers, nil
+			var res []*models.User
+			for  _, usr := range mock.mockUsers {
+				res = append(res, usr)
+			}
+			return res, nil
 		}
 		uh := NewUsersHandler(mock)
 
 		r := httptest.NewRequest("GET", "/users", nil)
 		w := httptest.NewRecorder()
-		uh.Get(w, r)
+		router := prepareRouter(http.MethodGet, "/users", uh.Get)
+		router.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -55,7 +69,8 @@ func TestUsersHandler_Get(t *testing.T) {
 
 		r := httptest.NewRequest("GET", "/users", nil)
 		w := httptest.NewRecorder()
-		uh.Get(w, r)
+		router := prepareRouter(http.MethodGet, "/users", uh.Get)
+		router.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -89,7 +104,8 @@ func TestUsersHandler_Get(t *testing.T) {
 
 		r := httptest.NewRequest("GET", "/users", nil)
 		w := httptest.NewRecorder()
-		uh.Get(w, r)
+		router := prepareRouter(http.MethodGet, "/users", uh.Get)
+		router.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -103,13 +119,14 @@ func TestUsersHandler_GetByID(t *testing.T) {
 	t.Run("expect GET /users/{id} to return 200", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
 		mock.findByIDImpl = func(ID string) (*models.User, error) {
-			return mock.mockUsers[0], nil
+			return mock.mockUsers[ID], nil
 		}
 		uh := NewUsersHandler(mock)
 
 		r := httptest.NewRequest("GET", "/users/1", nil)
 		w := httptest.NewRecorder()
-		uh.GetByID(w, r)
+		router := prepareRouter(http.MethodGet, "/users/{id}", uh.GetByID)
+		router.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -129,7 +146,7 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		var user *models.User
 		json.Unmarshal(body, &user)
 
-		if user.ID != mock.mockUsers[0].ID {
+		if user.ID != mock.mockUsers["1"].ID {
 			t.Fatal("wrong user returned")
 		}
 	})
@@ -143,7 +160,8 @@ func TestUsersHandler_GetByID(t *testing.T) {
 
 		r := httptest.NewRequest("GET", "/users/1", nil)
 		w := httptest.NewRecorder()
-		uh.GetByID(w, r)
+		router := prepareRouter(http.MethodGet, "/users/{id}", uh.GetByID)
+		router.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -161,7 +179,8 @@ func TestUsersHandler_GetByID(t *testing.T) {
 
 		r := httptest.NewRequest("GET", "/users/1", nil)
 		w := httptest.NewRecorder()
-		uh.GetByID(w, r)
+		router := prepareRouter(http.MethodGet, "/users/{id}", uh.GetByID)
+		router.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -184,7 +203,7 @@ func TestUsersHandler_Create(t *testing.T) {
 		}
 		mock.createImpl = func(user *models.User) (*models.User, error) {
 			user.ID = "3"
-			mock.mockUsers = append(mock.mockUsers, user)
+			mock.mockUsers[user.ID] = user
 			return user, nil
 		}
 		uh := NewUsersHandler(mock)
@@ -193,7 +212,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
-		uh.Create(w, r)
+		router := prepareRouter(http.MethodPost, "/users", uh.Create)
+		router.ServeHTTP(w, r)
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusCreated {
@@ -212,7 +232,7 @@ func TestUsersHandler_Create(t *testing.T) {
 		var user *models.User
 		json.Unmarshal(body, &user)
 
-		if user.ID != mock.mockUsers[len(mock.mockUsers)-1].ID {
+		if user.ID != mock.mockUsers[user.ID].ID {
 			t.Fatal("wrong user returned")
 		}
 	})
@@ -231,7 +251,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		body, _ := json.Marshal(mockPayload)
 		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		w := httptest.NewRecorder()
-		uh.Create(w, r)
+		router := prepareRouter(http.MethodPost, "/users", uh.Create)
+		router.ServeHTTP(w, r)
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusBadRequest {
@@ -249,7 +270,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		body, _ := json.Marshal(mockPayload)
 		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		w := httptest.NewRecorder()
-		uh.Create(w, r)
+		router := prepareRouter(http.MethodPost, "/users", uh.Create)
+		router.ServeHTTP(w, r)
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusInternalServerError {
@@ -270,7 +292,8 @@ func TestUsersHandler_Create(t *testing.T) {
 		body, _ := json.Marshal(mockPayload)
 		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
 		w := httptest.NewRecorder()
-		uh.Create(w, r)
+		router := prepareRouter(http.MethodPost, "/users", uh.Create)
+		router.ServeHTTP(w, r)
 		resp := w.Result()
 
 		if resp.StatusCode != http.StatusInternalServerError {

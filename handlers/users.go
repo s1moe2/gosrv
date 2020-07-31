@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 
 	"github.com/s1moe2/gosrv/models"
@@ -39,7 +40,11 @@ func (h *UsersHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 // GetByID tries to get a user by ID
 func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	uid := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	uid, ok := vars["id"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
 	user, err := h.userRepo.FindByID(uid)
 	if err != nil {
