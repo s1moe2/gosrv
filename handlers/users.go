@@ -149,5 +149,23 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // Delete deletes a user
 func (h *UsersHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World"))
+	vars := mux.Vars(r)
+	uid, ok := vars["id"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	deletedID, err := h.userRepo.Delete(uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if deletedID == "" {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }

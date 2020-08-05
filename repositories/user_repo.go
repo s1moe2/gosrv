@@ -45,6 +45,6 @@ func (r *UserRepo) Update(user *models.User) (*models.User, error) {
 }
 
 // Delete deletes a user, only returns error if action fails
-func (r *UserRepo) Delete(ID string) error {
-	return nil
+func (r *UserRepo) Delete(ID string) (string, error) {
+	return ID, nil
 }
