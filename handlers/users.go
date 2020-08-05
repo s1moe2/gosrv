@@ -108,7 +108,43 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // Update updates a user
 func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, World"))
+	vars := mux.Vars(r)
+	uid, ok := vars["id"]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	decoder := json.NewDecoder(r.Body)
+
+	var userPayload models.User
+	err := decoder.Decode(&userPayload)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userPayload.ID = uid
+
+	user, err := h.userRepo.Update(&userPayload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if user == nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	res, err := json.Marshal(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
 }
 
 // Delete deletes a user

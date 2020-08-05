@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/google/go-cmp v0.5.1
 	github.com/gorilla/mux v1.7.4
 	github.com/lib/pq v1.7.0
 	github.com/pkg/errors v0.9.1

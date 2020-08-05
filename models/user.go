@@ -3,8 +3,8 @@ package models
 // User model
 type User struct {
 	ID    string `json:"id"`
-	Name  string `json: "name"`
-	Email string `json: "email"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // UserRepository defines the set of User related methods available
