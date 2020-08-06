@@ -183,7 +183,7 @@ func TestUsersHandler_Create(t *testing.T) {
 
 		body, _ := json.Marshal(mockPayload)
 		r := httptest.NewRequest("POST", "/users", bytes.NewReader(body))
-		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Content-Type", "application/json; charset=utf-8")
 		w := httptest.NewRecorder()
 		router := prepareRouter(http.MethodPost, "/users", uh.Create)
 		router.ServeHTTP(w, r)
@@ -278,7 +278,7 @@ func TestUsersHandler_Update(t *testing.T) {
 
 		body, _ := json.Marshal(mockPayload)
 		r := httptest.NewRequest("PUT", "/users/1", bytes.NewReader(body))
-		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Content-Type", "application/json; charset=utf-8")
 		w := httptest.NewRecorder()
 		router := prepareRouter(http.MethodPut, "/users/{id}", uh.Update)
 		router.ServeHTTP(w, r)
