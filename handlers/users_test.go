@@ -142,7 +142,7 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		router.ServeHTTP(w, r)
 
 		resp := w.Result()
-		
+
 		assertStatusCode(t, resp, http.StatusNotFound)
 	})
 

@@ -22,10 +22,10 @@ func newServer(serverConfig config.ServerConfig, router *mux.Router) *apiServer 
 		httpServer: &http.Server{
 			Addr: serverConfig.Address,
 			//ErrorLog:     log.New(logrus.New().Writer(), "", 0),
-			Handler:      router,
+			Handler:      http.TimeoutHandler(router, 10*time.Second, "request timeout"),
 			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 10 * time.Second,
-			IdleTimeout:  15 * time.Second,
+			WriteTimeout: 15 * time.Second,
+			IdleTimeout:  20 * time.Second,
 		},
 	}
 }
