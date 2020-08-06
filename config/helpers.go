@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func getEnv(key string, defaultVal string) string {
@@ -21,6 +22,15 @@ func getEnvAsInt(name string, defaultVal int) int {
 	}
 
 	return defaultVal
+}
+
+func getEnvAsDuration(name string, defaultVal int) time.Duration {
+	valueStr := getEnv(name, "")
+	if value, err := strconv.Atoi(valueStr); err == nil {
+		return time.Duration(value) * time.Second
+	}
+
+	return time.Duration(defaultVal) * time.Second
 }
 
 func getEnvAsBool(name string, defaultVal bool) bool {
