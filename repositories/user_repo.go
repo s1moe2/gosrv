@@ -45,8 +45,16 @@ func (r *UserRepo) FindByID(ctx context.Context, ID string) (*models.User, error
 }
 
 // FindByEmail finds a user by email, returns nil if not found
-func (r *UserRepo) FindByEmail(email string) (*models.User, error) {
-	return nil, nil
+func (r *UserRepo) FindByEmail(ctx context.Context, email string) (*models.User, error) {
+	user := &models.User{}
+	err := r.db.GetContext(ctx, user, "SELECT id, name, email FROM users WHERE email = $1", email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return user, nil
 }
 
 // Create creates a new user, returning the full model

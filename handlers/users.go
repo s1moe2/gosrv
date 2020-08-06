@@ -71,7 +71,7 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userCheck, err := h.userRepo.FindByEmail(userPayload.Email)
+	userCheck, err := h.userRepo.FindByEmail(r.Context(), userPayload.Email)
 	if err != nil {
 		respondError(w, internalError())
 		return

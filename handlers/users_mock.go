@@ -26,7 +26,7 @@ func (r *userRepoMock) FindByID(ctx context.Context, id string) (*models.User, e
 	return r.findByIDImpl(id)
 }
 
-func (r *userRepoMock) FindByEmail(email string) (*models.User, error) {
+func (r *userRepoMock) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	return r.findByEmailImpl(email)
 }
 
