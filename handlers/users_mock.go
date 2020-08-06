@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"github.com/s1moe2/gosrv/models"
 )
 
@@ -17,11 +18,11 @@ func newUserRepoMockDefault() *userRepoMock {
 	return &userRepoMock{}
 }
 
-func (r *userRepoMock) GetAll() ([]*models.User, error) {
+func (r *userRepoMock) GetAll(ctx context.Context) ([]*models.User, error) {
 	return r.getAllImpl()
 }
 
-func (r *userRepoMock) FindByID(id string) (*models.User, error) {
+func (r *userRepoMock) FindByID(ctx context.Context, id string) (*models.User, error) {
 	return r.findByIDImpl(id)
 }
 

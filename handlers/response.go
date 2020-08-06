@@ -6,8 +6,8 @@ import (
 )
 
 type appError struct {
-	Status int
-	Message string
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }
 
 // internalError returns an appError with 500 code and default message

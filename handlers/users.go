@@ -22,9 +22,10 @@ func NewUsersHandler(userRepo models.UserRepository) *UsersHandler {
 
 // Get gets all users
 func (h *UsersHandler) Get(w http.ResponseWriter, r *http.Request) {
-	users, err := h.userRepo.GetAll()
+	users, err := h.userRepo.GetAll(r.Context())
 	if err != nil {
 		respondError(w, internalError())
+		return
 	}
 
 	respond(w, users, http.StatusOK)
@@ -42,9 +43,10 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userRepo.FindByID(uid)
+	user, err := h.userRepo.FindByID(r.Context(), uid)
 	if err != nil {
 		respondError(w, internalError())
+		return
 	}
 
 	if user == nil {

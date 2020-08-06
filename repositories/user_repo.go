@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"context"
+	"database/sql"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/s1moe2/gosrv/models"
@@ -19,18 +21,27 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 // GetAll fetches all users, returns an empty slice if no user exists
-func (r *UserRepo) GetAll() ([]*models.User, error) {
-	var users []*models.User
-	err := r.db.Select(&users, "SELECT id, name, email FROM users")
+func (r *UserRepo) GetAll(ctx context.Context) ([]*models.User, error) {
+	users := []*models.User{}
+	err := r.db.SelectContext(ctx, &users, "SELECT id, name, email FROM users")
 	if err != nil {
 		return nil, err
 	}
+
 	return users, nil
 }
 
 // FindByID finds a user by ID, returns nil if not found
-func (r *UserRepo) FindByID(ID string) (*models.User, error) {
-	return nil, nil
+func (r *UserRepo) FindByID(ctx context.Context, ID string) (*models.User, error) {
+	user := &models.User{}
+	err := r.db.GetContext(ctx, user, "SELECT id, name, email FROM users WHERE id = $1", ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return user, nil
 }
 
 // FindByEmail finds a user by email, returns nil if not found
