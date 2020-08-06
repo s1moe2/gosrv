@@ -1,18 +1,18 @@
 package repositories
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/s1moe2/gosrv/models"
 )
 
 // UserRepo implements models.UserRepository
 type UserRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 // NewUserRepo returns a configured UserRepo object
-func NewUserRepo(db *sql.DB) *UserRepo {
+func NewUserRepo(db *sqlx.DB) *UserRepo {
 	return &UserRepo{
 		db: db,
 	}
@@ -21,6 +21,10 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 // GetAll fetches all users, returns an empty slice if no user exists
 func (r *UserRepo) GetAll() ([]*models.User, error) {
 	var users []*models.User
+	err := r.db.Select(&users, "SELECT id, name, email FROM users")
+	if err != nil {
+		return nil, err
+	}
 	return users, nil
 }
 
