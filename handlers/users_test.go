@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/google/go-cmp/cmp"
 	"github.com/s1moe2/gosrv/models"
 	"io/ioutil"
 	"net/http"
@@ -16,11 +15,14 @@ func TestUsersHandler_Get(t *testing.T) {
 	t.Run("expect GET /users to return 200 and a list of users", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
 		mock.getAllImpl = func() ([]*models.User, error) {
-			var res []*models.User
-			for _, usr := range mock.mockUsers {
-				res = append(res, usr)
+			mockUsers := []*models.User{
+				&models.User{
+					ID:    "1",
+					Name:  "user1",
+					Email: "user1@eml.com",
+				},
 			}
-			return res, nil
+			return mockUsers, nil
 		}
 		uh := NewUsersHandler(mock)
 
@@ -39,11 +41,10 @@ func TestUsersHandler_Get(t *testing.T) {
 			t.Fatal("failed to read response body")
 		}
 
-		var users []*models.User
-		json.Unmarshal(body, &users)
-
-		if len(users) != len(mock.mockUsers) {
-			t.Fatal("wrong user set")
+		var user []*models.User
+		err = json.Unmarshal(body, &user)
+		if err != nil {
+			t.Fatal("failed to parse response body")
 		}
 	})
 
@@ -70,10 +71,9 @@ func TestUsersHandler_Get(t *testing.T) {
 		}
 
 		var users []*models.User
-		json.Unmarshal(body, &users)
-
-		if len(users) != 0 {
-			t.Fatal("wrong user set")
+		err = json.Unmarshal(body, &users)
+		if err != nil {
+			t.Fatal("failed to parse response body")
 		}
 	})
 
@@ -99,7 +99,11 @@ func TestUsersHandler_GetByID(t *testing.T) {
 	t.Run("expect GET /users/{id} to return 200", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
 		mock.findByIDImpl = func(ID string) (*models.User, error) {
-			return mock.mockUsers[ID], nil
+			return &models.User{
+				ID:    "1",
+				Name:  "user1",
+				Email: "user1@eml.com",
+			}, nil
 		}
 		uh := NewUsersHandler(mock)
 
@@ -119,10 +123,9 @@ func TestUsersHandler_GetByID(t *testing.T) {
 		}
 
 		var user *models.User
-		json.Unmarshal(body, &user)
-
-		if user.ID != mock.mockUsers["1"].ID {
-			t.Fatal("wrong user returned")
+		err = json.Unmarshal(body, &user)
+		if err != nil {
+			t.Fatal("failed to parse response body")
 		}
 	})
 
@@ -174,7 +177,6 @@ func TestUsersHandler_Create(t *testing.T) {
 		}
 		mock.createImpl = func(user *models.User) (*models.User, error) {
 			user.ID = "3"
-			mock.mockUsers[user.ID] = user
 			return user, nil
 		}
 		uh := NewUsersHandler(mock)
@@ -196,10 +198,9 @@ func TestUsersHandler_Create(t *testing.T) {
 		}
 
 		var user *models.User
-		json.Unmarshal(body, &user)
-
-		if user.ID != mock.mockUsers[user.ID].ID {
-			t.Fatal("wrong user returned")
+		err = json.Unmarshal(body, &user)
+		if err != nil {
+			t.Fatal("failed to parse response body")
 		}
 	})
 
@@ -271,7 +272,6 @@ func TestUsersHandler_Update(t *testing.T) {
 	t.Run("expect PUT /users/{id} to return 200", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
 		mock.updateImpl = func(user *models.User) (*models.User, error) {
-			mock.mockUsers[user.ID] = user
 			return user, nil
 		}
 		uh := NewUsersHandler(mock)
@@ -293,10 +293,9 @@ func TestUsersHandler_Update(t *testing.T) {
 		}
 
 		var user *models.User
-		json.Unmarshal(body, &user)
-
-		if !cmp.Equal(user, mock.mockUsers[user.ID]) {
-			t.Fatal("wrong user returned")
+		err = json.Unmarshal(body, &user)
+		if err != nil {
+			t.Fatal("failed to parse response body")
 		}
 	})
 
