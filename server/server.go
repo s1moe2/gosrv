@@ -18,6 +18,7 @@ func Run() error {
 	userRepo := repositories.NewUserRepo(dbConn)
 
 	router := mux.NewRouter()
+	router.Use(loggingMiddleware)
 	setupUsersRouter(router, userRepo)
 
 	srv := newServer(conf.Server, router)

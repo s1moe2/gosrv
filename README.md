@@ -1,11 +1,12 @@
 # gosrv
 
 A golang RESTful API server with:
-- nice decoupling (I hope) with a sort of reposiroty pattern approach
+- nice decoupling (I hope) with a sort of repository pattern approach
 - unit tests on the route handlers
+- gorilla/mux for router
+- logging middleware
 - database migrations
 - dockerfile
-- gorilla/mux for router
 
 ### Requirements
 
