@@ -18,19 +18,19 @@ func newUserRepoMockDefault() *userRepoMock {
 	return &userRepoMock{}
 }
 
-func (r *userRepoMock) GetAll(ctx context.Context) ([]*models.User, error) {
+func (r *userRepoMock) GetAll(_ context.Context) ([]*models.User, error) {
 	return r.getAllImpl()
 }
 
-func (r *userRepoMock) FindByID(ctx context.Context, id string) (*models.User, error) {
+func (r *userRepoMock) FindByID(_ context.Context, id string) (*models.User, error) {
 	return r.findByIDImpl(id)
 }
 
-func (r *userRepoMock) FindByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *userRepoMock) FindByEmail(_ context.Context, email string) (*models.User, error) {
 	return r.findByEmailImpl(email)
 }
 
-func (r *userRepoMock) Create(user *models.User) (*models.User, error) {
+func (r *userRepoMock) Create(_ context.Context, user *models.User) (*models.User, error) {
 	return r.createImpl(user)
 }
 

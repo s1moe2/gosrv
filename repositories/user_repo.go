@@ -47,7 +47,8 @@ func (r *UserRepo) FindByID(ctx context.Context, ID string) (*models.User, error
 // FindByEmail finds a user by email, returns nil if not found
 func (r *UserRepo) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	user := &models.User{}
-	err := r.db.GetContext(ctx, user, "SELECT id, name, email FROM users WHERE email = $1", email)
+	stmt := "SELECT id, name, email FROM users WHERE email = $1"
+	err := r.db.GetContext(ctx, user, stmt, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -58,8 +59,14 @@ func (r *UserRepo) FindByEmail(ctx context.Context, email string) (*models.User,
 }
 
 // Create creates a new user, returning the full model
-func (r *UserRepo) Create(user *models.User) (*models.User, error) {
-	return &models.User{}, nil
+func (r *UserRepo) Create(ctx context.Context, user *models.User) (*models.User, error) {
+	stmt := "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id"
+	row := r.db.QueryRowContext(ctx, stmt, user.Name, user.Name)
+	err := row.Scan(&user.ID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // Update updates new user, returning the updated model

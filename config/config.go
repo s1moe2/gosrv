@@ -24,10 +24,10 @@ func New() *AppConfig {
 	return &AppConfig{
 		Server: ServerConfig{
 			Address:        getEnv("ADDRESS", "localhost:4000"),
-			HandlerTimeout: getEnvAsDuration("HANDLER_TIMEOUT", 10),
-			ReadTimeout:    getEnvAsDuration("READ_TIMEOUT", 5),
-			WriteTimeout:   getEnvAsDuration("WRITE_TIMEOUT", 10),
-			IdleTimeout:    getEnvAsDuration("IDLE_TIMEOUT", 20),
+			HandlerTimeout: getEnvAsDuration("HANDLER_TIMEOUT", 30),
+			ReadTimeout:    getEnvAsDuration("READ_TIMEOUT", 10),
+			WriteTimeout:   getEnvAsDuration("WRITE_TIMEOUT", 20),
+			IdleTimeout:    getEnvAsDuration("IDLE_TIMEOUT", 30),
 		},
 		Database: DatabaseConfig{
 			URI:    getEnv("DB_URI", ""),

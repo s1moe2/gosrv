@@ -85,7 +85,7 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userRepo.Create(&userPayload)
+	user, err := h.userRepo.Create(r.Context(), &userPayload)
 	if err != nil {
 		respondError(w, internalError())
 		return
