@@ -30,11 +30,11 @@ func (r *userRepoMock) FindByEmail(_ context.Context, email string) (*models.Use
 	return r.findByEmailImpl(email)
 }
 
-func (r *userRepoMock) Create(_ context.Context, user *models.User) (*models.User, error) {
+func (r *userRepoMock) Create(user *models.User) (*models.User, error) {
 	return r.createImpl(user)
 }
 
-func (r *userRepoMock) Update(_ context.Context, user *models.User) (*models.User, error) {
+func (r *userRepoMock) Update(user *models.User) (*models.User, error) {
 	return r.updateImpl(user)
 }
 

@@ -86,7 +86,7 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userRepo.Create(r.Context(), &userPayload)
+	user, err := h.userRepo.Create(&userPayload)
 	if err != nil {
 		respondError(w, internalError())
 		return
@@ -117,7 +117,7 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	userPayload.ID = uid
 
-	user, err := h.userRepo.Update(r.Context(), &userPayload)
+	user, err := h.userRepo.Update(&userPayload)
 	if err != nil {
 		if e, ok := err.(*repositories.ConflictError); ok {
 			respondError(w, appError{

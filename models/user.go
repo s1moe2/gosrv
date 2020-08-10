@@ -14,7 +14,7 @@ type UserRepository interface {
 	GetAll(ctx context.Context) ([]*User, error)
 	FindByID(ctx context.Context, ID string) (*User, error)
 	FindByEmail(ctx context.Context, email string) (*User, error)
-	Create(ctx context.Context, user *User) (*User, error)
-	Update(ctx context.Context, user *User) (*User, error)
+	Create(user *User) (*User, error)
+	Update(user *User) (*User, error)
 	Delete(ID string) (bool, error)
 }
