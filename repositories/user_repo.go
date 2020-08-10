@@ -61,7 +61,7 @@ func (r *UserRepo) FindByEmail(ctx context.Context, email string) (*models.User,
 // Create creates a new user, returning the full model
 func (r *UserRepo) Create(ctx context.Context, user *models.User) (*models.User, error) {
 	stmt := "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id"
-	row := r.db.QueryRowContext(ctx, stmt, user.Name, user.Name)
+	row := r.db.QueryRowContext(ctx, stmt, user.Name, user.Email)
 	err := row.Scan(&user.ID)
 	if err != nil {
 		return nil, err
@@ -69,9 +69,21 @@ func (r *UserRepo) Create(ctx context.Context, user *models.User) (*models.User,
 	return user, nil
 }
 
-// Update updates new user, returning the updated model
-func (r *UserRepo) Update(user *models.User) (*models.User, error) {
-	return &models.User{}, nil
+// Update updates a user, returning the updated model or nil if no rows were affected
+func (r *UserRepo) Update(ctx context.Context, user *models.User) (*models.User, error) {
+	stmt := "UPDATE users SET name = $1, email = $2 WHERE id = $3"
+	res, err := r.db.ExecContext(ctx, stmt, user.Name, user.Email, user.ID)
+	if err != nil {
+		return nil, parseError(err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if rows == 0 {
+		return nil, nil
+	}
+	return user, nil
 }
 
 // Delete deletes a user, only returns error if action fails

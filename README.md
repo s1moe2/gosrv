@@ -4,7 +4,8 @@ A golang RESTful API server with:
 - nice decoupling (I hope) with a sort of repository pattern approach
 - unit tests on the route handlers
 - gorilla/mux for router
-- logging middleware
+- request logging middleware
+- 
 - database migrations
 - dockerfile
 

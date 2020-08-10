@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/s1moe2/gosrv/repositories"
 	"net/http"
 
 	"github.com/s1moe2/gosrv/models"
@@ -116,8 +117,16 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	userPayload.ID = uid
 
-	user, err := h.userRepo.Update(&userPayload)
+	user, err := h.userRepo.Update(r.Context(), &userPayload)
 	if err != nil {
+		if e, ok := err.(*repositories.ConflictError); ok {
+			respondError(w, appError{
+				Status:  http.StatusBadRequest,
+				Message: e.Error(),
+			})
+			return
+		}
+
 		respondError(w, internalError())
 		return
 	}

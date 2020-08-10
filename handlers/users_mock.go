@@ -34,7 +34,7 @@ func (r *userRepoMock) Create(_ context.Context, user *models.User) (*models.Use
 	return r.createImpl(user)
 }
 
-func (r *userRepoMock) Update(user *models.User) (*models.User, error) {
+func (r *userRepoMock) Update(_ context.Context, user *models.User) (*models.User, error) {
 	return r.updateImpl(user)
 }
 
