@@ -19,6 +19,7 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 COPY --from=builder /app/gosrv .
+COPY --from=builder /app/swaggerui ./swaggerui
 
 EXPOSE 4000
 CMD ["./gosrv"]

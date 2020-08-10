@@ -5,6 +5,7 @@ import (
 	"github.com/s1moe2/gosrv/config"
 	"github.com/s1moe2/gosrv/db"
 	"github.com/s1moe2/gosrv/repositories"
+	"net/http"
 )
 
 // Run handles the API server configuration and setup before starting the HTTP server
@@ -20,6 +21,9 @@ func Run() error {
 	router := mux.NewRouter()
 	router.Use(loggingMiddleware)
 	setupUsersRouter(router, userRepo)
+
+	fs := http.FileServer(http.Dir("./swaggerui/"))
+	router.PathPrefix("/docs/").Handler(http.StripPrefix("/docs/", fs))
 
 	srv := newServer(conf.Server, router)
 	return srv.start()

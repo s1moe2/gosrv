@@ -5,7 +5,8 @@ A golang RESTful API server with:
 - unit tests on the route handlers
 - gorilla/mux for router
 - request logging middleware
-- 
+- OpenAPI documentation
+- SwaggerUI to serve API docs
 - database migrations
 - dockerfile
 
