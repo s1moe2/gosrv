@@ -11,7 +11,7 @@ type userRepoMock struct {
 	findByEmailImpl func(email string) (*models.User, error)
 	createImpl      func(user *models.User) (*models.User, error)
 	updateImpl      func(user *models.User) (*models.User, error)
-	deleteImpl      func(ID string) (string, error)
+	deleteImpl      func(ID string) (bool, error)
 }
 
 func newUserRepoMockDefault() *userRepoMock {
@@ -38,6 +38,6 @@ func (r *userRepoMock) Update(_ context.Context, user *models.User) (*models.Use
 	return r.updateImpl(user)
 }
 
-func (r *userRepoMock) Delete(id string) (string, error) {
+func (r *userRepoMock) Delete(id string) (bool, error) {
 	return r.deleteImpl(id)
 }

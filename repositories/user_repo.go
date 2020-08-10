@@ -87,6 +87,15 @@ func (r *UserRepo) Update(ctx context.Context, user *models.User) (*models.User,
 }
 
 // Delete deletes a user, only returns error if action fails
-func (r *UserRepo) Delete(ID string) (string, error) {
-	return ID, nil
+func (r *UserRepo) Delete(ID string) (bool, error) {
+	stmt := "DELETE FROM users WHERE id = $1 RETURNING id"
+	res, err := r.db.Exec(stmt, ID)
+	if err != nil {
+		return false, err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return rows > 0, nil
 }

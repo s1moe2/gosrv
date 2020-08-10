@@ -154,13 +154,13 @@ func (h *UsersHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deletedID, err := h.userRepo.Delete(uid)
+	deleted, err := h.userRepo.Delete(uid)
 	if err != nil {
 		respondError(w, internalError())
 		return
 	}
 
-	if deletedID == "" {
+	if !deleted {
 		respondError(w, appError{
 			Status:  http.StatusNotFound,
 			Message: "user not found",

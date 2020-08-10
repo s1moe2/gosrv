@@ -337,8 +337,8 @@ func TestUsersHandler_Update(t *testing.T) {
 func TestUsersHandler_Delete(t *testing.T) {
 	t.Run("expect DELETE /users/{id} to return 204", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
-		mock.deleteImpl = func(ID string) (string, error) {
-			return ID, nil
+		mock.deleteImpl = func(ID string) (bool, error) {
+			return true, nil
 		}
 		uh := NewUsersHandler(mock)
 
@@ -355,8 +355,8 @@ func TestUsersHandler_Delete(t *testing.T) {
 
 	t.Run("expect DELETE /users/{id} to return 404 when user does not exist", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
-		mock.deleteImpl = func(ID string) (string, error) {
-			return "", nil
+		mock.deleteImpl = func(ID string) (bool, error) {
+			return false, nil
 		}
 		uh := NewUsersHandler(mock)
 
@@ -372,8 +372,8 @@ func TestUsersHandler_Delete(t *testing.T) {
 
 	t.Run("expect DELETE /users/{id} to return 500 on internal error", func(t *testing.T) {
 		mock := newUserRepoMockDefault()
-		mock.deleteImpl = func(ID string) (string, error) {
-			return "", errors.New("repo error")
+		mock.deleteImpl = func(ID string) (bool, error) {
+			return false, errors.New("repo error")
 		}
 		uh := NewUsersHandler(mock)
 
