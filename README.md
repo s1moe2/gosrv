@@ -1,7 +1,7 @@
 # gosrv
 
 A golang RESTful API server with:
-- nice decoupling (I hope) with a sort of repository pattern approach
+- dependency injection on handlers and a sort of repository pattern approach for data layer
 - unit tests on the route handlers
 - gorilla/mux for router
 - request logging middleware
@@ -14,9 +14,9 @@ A golang RESTful API server with:
 
 Create a PostgreSQL database and user:
 ```postgresql
-create database thedb;
-create user theuser with encrypted password 'thepwd';
-grant all privileges on database thedb to theuser;
+CREATE DATABASE thedb;
+CREATE USER theuser WITH ENCRYPTED PASSWORD 'thepwd';
+GRANT ALL PRIVILEGES ON DATABASE thedb TO theuser;
 ```
 
 ### Tests
