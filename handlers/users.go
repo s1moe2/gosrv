@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"github.com/s1moe2/gosrv/repositories"
 	"net/http"
+	"regexp"
 
 	"github.com/s1moe2/gosrv/models"
 )
@@ -12,6 +14,27 @@ import (
 // UsersHandler holds handler dependencies
 type UsersHandler struct {
 	userRepo models.UserRepository
+}
+
+type UserPayload struct {
+	Name  string
+	Email string
+}
+
+func (p *UserPayload) validate() []error {
+	var errs []error
+
+	if len(p.Name) < 3 {
+		errs = append(errs, errors.New("name: invalid length"))
+	}
+
+	const emailRegex = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+	emailRegexp := regexp.MustCompile(emailRegex)
+	if !emailRegexp.MatchString(p.Email) {
+		errs = append(errs, errors.New("email: invalid format"))
+	}
+
+	return errs
 }
 
 // NewBaseHandler returns a new BaseHandler
@@ -37,10 +60,7 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid, ok := vars["id"]
 	if !ok {
-		respondError(w, appError{
-			Status:  http.StatusBadRequest,
-			Message: "invalid id param",
-		})
+		respondError(w, newSimpleUserError(errors.New("invalid id param")))
 		return
 	}
 
@@ -51,9 +71,9 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user == nil {
-		respondError(w, appError{
-			Status:  http.StatusNotFound,
-			Message: "user not found",
+		respondError(w, &userError{
+			Status: http.StatusNotFound,
+			Errors: []error{errors.New("user not found")},
 		})
 		return
 	}
@@ -65,10 +85,16 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var userPayload models.User
+	var userPayload UserPayload
 	err := decoder.Decode(&userPayload)
 	if err != nil {
 		respondError(w, internalError())
+		return
+	}
+
+	errs := userPayload.validate()
+	if errs != nil {
+		respondError(w, newUserError(errs))
 		return
 	}
 
@@ -79,14 +105,14 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if userCheck != nil {
-		respondError(w, appError{
-			Status:  http.StatusBadRequest,
-			Message: "email already in use",
-		})
+		respondError(w, newSimpleUserError(errors.New("email already in use")))
 		return
 	}
 
-	user, err := h.userRepo.Create(&userPayload)
+	user, err := h.userRepo.Create(&models.User{
+		Name:  userPayload.Name,
+		Email: userPayload.Email,
+	})
 	if err != nil {
 		respondError(w, internalError())
 		return
@@ -100,30 +126,33 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid, ok := vars["id"]
 	if !ok {
-		respondError(w, appError{
-			Status:  http.StatusBadRequest,
-			Message: "invalid id param",
-		})
+		respondError(w, newSimpleUserError(errors.New("invalid id param")))
 		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
 
-	var userPayload models.User
+	var userPayload UserPayload
 	err := decoder.Decode(&userPayload)
 	if err != nil {
 		respondError(w, internalError())
 		return
 	}
-	userPayload.ID = uid
 
-	user, err := h.userRepo.Update(&userPayload)
+	errs := userPayload.validate()
+	if errs != nil {
+		respondError(w, newUserError(errs))
+		return
+	}
+
+	user, err := h.userRepo.Update(&models.User{
+		ID:    uid,
+		Name:  userPayload.Name,
+		Email: userPayload.Email,
+	})
 	if err != nil {
 		if e, ok := err.(*repositories.ConflictError); ok {
-			respondError(w, appError{
-				Status:  http.StatusBadRequest,
-				Message: e.Error(),
-			})
+			respondError(w, newSimpleUserError(e))
 			return
 		}
 
@@ -132,9 +161,9 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user == nil {
-		respondError(w, appError{
-			Status:  http.StatusNotFound,
-			Message: "user not found",
+		respondError(w, &userError{
+			Status: http.StatusNotFound,
+			Errors: []error{errors.New("user not found")},
 		})
 		return
 	}
@@ -147,10 +176,7 @@ func (h *UsersHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uid, ok := vars["id"]
 	if !ok {
-		respondError(w, appError{
-			Status:  http.StatusBadRequest,
-			Message: "invalid id param",
-		})
+		respondError(w, newSimpleUserError(errors.New("invalid id param")))
 		return
 	}
 
@@ -161,9 +187,9 @@ func (h *UsersHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !deleted {
-		respondError(w, appError{
-			Status:  http.StatusNotFound,
-			Message: "user not found",
+		respondError(w, &userError{
+			Status: http.StatusNotFound,
+			Errors: []error{errors.New("user not found")},
 		})
 		return
 	}

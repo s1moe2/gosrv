@@ -8,7 +8,7 @@ import (
 
 type ConflictError struct {
 	Message string
-	Err   error
+	Err     error
 }
 
 func (e *ConflictError) Error() string {
@@ -27,7 +27,7 @@ func parsePsqlError(e *pq.Error) error {
 
 		return &ConflictError{
 			Message: msg,
-			Err: e,
+			Err:     e,
 		}
 	default:
 		return e
@@ -63,7 +63,6 @@ func extractStringSubmatch(regex *regexp.Regexp, str string) string {
 	results := regex.FindStringSubmatch(str)
 	if len(results) < 2 {
 		return ""
-	} else {
-		return results[1]
 	}
+	return results[1]
 }
