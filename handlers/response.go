@@ -26,3 +26,14 @@ func respondError(w http.ResponseWriter, e customError) {
 		// TODO add log on error
 	}
 }
+
+// respondInternalError is an helper similar to respondError but responds
+// with a default internal error code and payload
+func respondInternalError(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusInternalServerError)
+	err := json.NewEncoder(w).Encode(newInternalError())
+	if err != nil {
+		// TODO add log on error
+	}
+}

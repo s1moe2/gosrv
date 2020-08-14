@@ -48,7 +48,7 @@ func NewUsersHandler(userRepo models.UserRepository) *UsersHandler {
 func (h *UsersHandler) Get(w http.ResponseWriter, r *http.Request) {
 	users, err := h.userRepo.GetAll(r.Context())
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *UsersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.userRepo.FindByID(r.Context(), uid)
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var userPayload UserPayload
 	err := decoder.Decode(&userPayload)
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	userCheck, err := h.userRepo.FindByEmail(r.Context(), userPayload.Email)
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -114,7 +114,7 @@ func (h *UsersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Email: userPayload.Email,
 	})
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 	var userPayload UserPayload
 	err := decoder.Decode(&userPayload)
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -156,7 +156,7 @@ func (h *UsersHandler) Update(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 
@@ -182,7 +182,7 @@ func (h *UsersHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	deleted, err := h.userRepo.Delete(uid)
 	if err != nil {
-		respondError(w, internalError())
+		respondInternalError(w)
 		return
 	}
 

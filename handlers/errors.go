@@ -69,19 +69,21 @@ func (ue userError) StatusCode() int {
 	return ue.Status
 }
 
-type appError struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
+type internalError struct {
+	Status  int
+	Message string
+	Errors 	ErrorList
 }
 
-func (ae appError) StatusCode() int {
-	return ae.Status
+func (ie internalError) StatusCode() int {
+	return ie.Status
 }
 
-// internalError returns an appError with 500 code and default message
-func internalError() appError {
-	return appError{
+// internalError returns an internalError with 500 code and default message
+func newInternalError() internalError {
+	return internalError{
 		Status:  http.StatusInternalServerError,
 		Message: "Internal server error",
+		Errors: []error{},
 	}
 }
